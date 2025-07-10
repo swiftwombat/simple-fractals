@@ -12,6 +12,14 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(main src/main.cpp)
-target_compile_features(main PRIVATE cxx_std_17)
-target_link_libraries(main PRIVATE SFML::Graphics)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+add_executable(SimpleFractals
+    src/App.cpp
+    src/AppState.cpp
+    src/Projection.cpp
+    src/ProjectionSource.cpp
+    src/State.cpp)
+
+target_compile_features(SimpleFractals PRIVATE cxx_std_17)
+target_link_libraries(SimpleFractals PRIVATE SFML::Graphics)
+set_target_properties(SimpleFractals PROPERTIES WIN32_EXECUTABLE TRUE)
