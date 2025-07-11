@@ -4,7 +4,7 @@
 
 App::App()
 {
-    auto title = sf::String("Fractal Studio");
+    auto title = sf::String("Simple Fractals");
     projectionSource = new ProjectionSource(title);
     states.push(new AppState(*projectionSource));
 }

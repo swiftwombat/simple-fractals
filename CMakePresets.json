@@ -33,13 +33,13 @@
     ],
     "buildPresets": [
         {
-            "name": "fractal-studio-debug",
+            "name": "simple-fractals-debug",
             "displayName": "Debug Build",
             "configurePreset": "debug",
             "configuration": "Debug"
         },
         {
-            "name": "fractal-studio-release",
+            "name": "simple-fractals-release",
             "displayName": "Release Build",
             "configurePreset": "release",
             "configuration": "Release"
