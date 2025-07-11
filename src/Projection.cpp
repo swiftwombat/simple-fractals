@@ -5,39 +5,28 @@
 Projection::Projection(const sf::Vector2f& size)
     : sf::RectangleShape(size)
 {
-    this->init();
+    setOrigin(sf::Vector2f(size.x / 2.f, size.y / 2.f));
 }
 
-Projection::~Projection()
-{
-
-}
-
-// m_functions
-
-void Projection::init()
-{
-    auto size = this->getSize();
-    this->setOrigin(sf::Vector2f(size.x / 2.f, size.y / 2.f));
-}
+Projection::~Projection() {}
 
 // functions
 
 bool Projection::contains(const sf::Vector2f& point)
 {
-    const sf::Vector2f tpoint = this->getInverseTransform().transformPoint(point);
-    return this->getLocalBounds().contains(tpoint);
+    const sf::Vector2f transformPoint = getInverseTransform().transformPoint(point);
+    return getLocalBounds().contains(transformPoint);
 }
 
 void Projection::scale(const sf::Vector2f& operands)
 {
-    auto scale = this->getScale() + operands;
-    this->setScale(scale);
+    auto scale = getScale() + operands;
+    setScale(scale);
 }
 
 void Projection::update(const sf::Texture* screencap)
 {
-    this->setTexture(screencap, false);
+    setTexture(screencap, false);
 }
 
 void Projection::render(sf::RenderTarget& target, const sf::RenderStates& states)

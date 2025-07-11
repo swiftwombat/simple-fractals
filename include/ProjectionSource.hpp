@@ -7,10 +7,7 @@ class ProjectionSource :
 {
 private:
     // m_variables
-    sf::Vector2f m_mpos;
-
-    // m_functions
-    void init();
+    sf::Vector2f mousePosition;
 
 public:
     // construction
@@ -18,7 +15,7 @@ public:
     virtual ~ProjectionSource();
 
     // functions
-    const sf::Vector2f& mpos() const;
+    const sf::Vector2f& getMousePosition() const;
 
     void checkEvents(const sf::Event& event);
     void update(State* state);

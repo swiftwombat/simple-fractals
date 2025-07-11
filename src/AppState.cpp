@@ -2,110 +2,90 @@
 
 // construction
 
-AppState::AppState(const ProjectionSource& projection_source)
-    : State(), m_projection_source(projection_source)
+AppState::AppState(const ProjectionSource& projectionSource)
+    : State(), projectionSource(projectionSource)
 {
-    this->init();
+    auto size = sf::Vector2u(projectionSource.getSize());
+    screencap = new sf::Texture(sf::Vector2u(size.x, size.y));
+    selectedProjection = nullptr;
 }
 
 AppState::~AppState()
 {
-    delete this->m_curr_proj;
-    delete this->m_screencap;
-    for ( auto p : this->m_projections ) { delete p; }
+    delete selectedProjection;
+    delete screencap;
+    for ( auto p : projections ) { delete p; }
 }
 
 // m_functions
 
-void AppState::init()
+Projection* AppState::getProjectionAt(const sf::Vector2f& mousePosition)
 {
-    auto size = sf::Vector2u(this->m_projection_source.getSize());
-    this->m_screencap = new sf::Texture(sf::Vector2u(size.x, size.y));
-    this->m_curr_proj = nullptr;
-}
-
-Projection* AppState::getProjectionAt(const sf::Vector2f& mpos)
-{
-    Projection* p_proj = nullptr;
-    for (auto p : this->m_projections)
+    Projection* hoveredProjection = nullptr;
+    for (auto projection : projections)
     {
-        if (!p->contains(mpos)) { continue; }
-        p_proj = p;
-        break;
+        const bool isSmaller =
+            !hoveredProjection || projection->getScale().x < hoveredProjection->getScale().x;
+        if (projection->contains(mousePosition) && isSmaller)
+            hoveredProjection = projection;
     }
-    return p_proj;
+    return hoveredProjection;
 }
 
 // functions
 
-void AppState::checkEvents(const sf::Event& e, const sf::Vector2f& mpos)
+void AppState::checkEvents(const sf::Event& e, const sf::Vector2f& mousePosition)
 {
-    // add new projection
-    if (const auto* keyPressed = e.getIf<sf::Event::KeyPressed>())
-        if (keyPressed->scancode == sf::Keyboard::Scancode::Space)
+    if (const auto* keyPress = e.getIf<sf::Event::KeyPressed>())
+    {
+        // add new projection
+        if (keyPress->scancode == sf::Keyboard::Scancode::Space)
         {
-            auto p_proj = new Projection(sf::Vector2f(this->m_projection_source.getSize()) / 6.f);
-            p_proj->setPosition(mpos);
-            this->m_projections.push_back(p_proj);
+            auto newProjection = new Projection(sf::Vector2f(projectionSource.getSize()) / 6.f);
+            newProjection->setPosition(mousePosition);
+            projections.push_back(newProjection);
         }
-
-    // delete projection
-    if (const auto* mouseButtonPress = e.getIf<sf::Event::MouseButtonPressed>())
+    }
+    else if (const auto* mouseButtonPress = e.getIf<sf::Event::MouseButtonPressed>())
+    {
+        // delete projection
         if (mouseButtonPress->button == sf::Mouse::Button::Right)
         {
-            auto i = this->m_projections.begin();
-            while (i != this->m_projections.end())
-            {
-                auto p_proj = *i;
-                if (p_proj->contains(mpos)) { this->m_projections.erase(i); break; }
-                else                        { ++i; }
-            }
+            Projection* selectedProjection = getProjectionAt(mousePosition);
+            auto i = std::find(projections.begin(), projections.end(), selectedProjection);
+            if (i != projections.end()) { projections.erase(i); }
         }
-
-    // rotate projection
-    if (const auto* mouseWheelScroll = e.getIf<sf::Event::MouseWheelScrolled>())
+    }
+    else if (const auto* mouseWheelScroll = e.getIf<sf::Event::MouseWheelScrolled>())
     {
-        Projection* p_proj = getProjectionAt(mpos);
+        // rotate projection
+        Projection* hoveredProjection = getProjectionAt(mousePosition);
         auto ds = mouseWheelScroll->delta;
-        if (p_proj)
+        if (hoveredProjection)
         {
             bool scaling = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift);
-            if (scaling) { p_proj->scale(sf::Vector2f(0.1f, 0.1f) * ds); }
-            else         { p_proj->rotate(sf::degrees(1.5f * ds)); }
+            if (scaling) { hoveredProjection->scale(sf::Vector2f(0.1f, 0.1f) * ds); }
+            else         { hoveredProjection->rotate(sf::degrees(1.4f * ds)); }
         }
     }
 }
 
-void AppState::update(const sf::Vector2f& mpos)
+void AppState::update(const sf::Vector2f& mousePosition)
 {
-    this->m_screencap->update(this->m_projection_source);
-    for (auto proj : this->m_projections) { proj->update(this->m_screencap); }
-
+    screencap->update(projectionSource);
+    for (auto proj : projections) { proj->update(screencap); }
 
     if (!sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
     {
-        this->m_curr_proj = nullptr;
+        selectedProjection = nullptr;
         return;
     }
-
-    if (!this->m_curr_proj)
-    {
-        for (auto proj : this->m_projections)
-        {
-            if (!proj->contains(mpos)) { continue; }
-            this->m_prev_mpos = mpos;
-            this->m_curr_proj = proj;
-            break;
-        }
-    }
-    else
-    {
-        this->m_curr_proj->move(mpos - m_prev_mpos);
-        this->m_prev_mpos = mpos;
-    }
+    if (!selectedProjection) { selectedProjection = getProjectionAt(mousePosition); }
+    else                    { selectedProjection->move(mousePosition - previousMousePosition); }
+    previousMousePosition = mousePosition;
 }
 
 void AppState::render(sf::RenderTarget& target)
 {
-    for (auto proj : this->m_projections) { proj->render(target); }
+    for (auto proj : projections) { proj->render(target); }
 }

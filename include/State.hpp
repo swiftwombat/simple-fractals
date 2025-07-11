@@ -7,7 +7,7 @@ class State
 {
     private:
     // m_variables
-    bool m_isEnded;
+    bool ended;
 
 public:
     // construction

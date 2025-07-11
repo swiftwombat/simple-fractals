@@ -9,24 +9,23 @@ class AppState :
 {
 private:
     // m_variables
-    const ProjectionSource& m_projection_source;
+    const ProjectionSource& projectionSource;
 
-    Projection* m_curr_proj;
-    std::vector<Projection*> m_projections;
-    sf::Vector2f m_prev_mpos;
-    sf::Texture* m_screencap;
+    Projection* selectedProjection;
+    std::vector<Projection*> projections;
+    sf::Vector2f previousMousePosition;
+    sf::Texture* screencap;
 
     // m_functions
-    void init();
-    Projection* getProjectionAt(const sf::Vector2f& mpos);
+    Projection* getProjectionAt(const sf::Vector2f& mousePosition);
 
 public:
     // construction
-    AppState(const ProjectionSource& projection_source);
+    AppState(const ProjectionSource& projectionSource);
     virtual ~AppState();
 
     // functions
-    void checkEvents(const sf::Event& event, const sf::Vector2f& mpos);
-    void update(const sf::Vector2f& mpos);
+    void checkEvents(const sf::Event& event, const sf::Vector2f& mousePosition);
+    void update(const sf::Vector2f& mousePosition);
     void render(sf::RenderTarget& target);
 };

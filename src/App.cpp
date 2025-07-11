@@ -1,68 +1,60 @@
-#include <Windows.h>
 #include <App.hpp>
 
 // construction
 
 App::App()
 {
-    this->init();
+    auto title = sf::String("Fractal Studio");
+    projectionSource = new ProjectionSource(title);
+    states.push(new AppState(*projectionSource));
 }
 
 App::~App()
 {
-    delete m_projection_source;
-    while (!m_states.empty())
+    delete projectionSource;
+    while (!states.empty())
     {
-        delete m_states.top();
-        m_states.pop();
+        delete states.top();
+        states.pop();
     }
 }
 
 // m_functions
 
-void App::init()
-{
-    this->initProjectionSource();
-    this->initStates();
-}
-
-void App::initProjectionSource()
-{
-    auto title = sf::String("Simple Fractals");
-    m_projection_source = new ProjectionSource(title);
-}
-
-void App::initStates()
-{
-    m_states.push(new AppState(*m_projection_source));
-}
-
 void App::update(State* state)
 {
-    m_projection_source->update(state);
-    const sf::Vector2f& mpos = m_projection_source->mpos();
+    projectionSource->update(state);
+    const sf::Vector2f& mousePosition = projectionSource->getMousePosition();
 
-    if (state) { state->update(mpos); }
+    if (state) { state->update(mousePosition); }
 }
 
 // functions
 
 void App::run()
 {
-    while (m_projection_source->isOpen())
+    while (projectionSource->isOpen())
     {
         State* state = nullptr;
-        if (!m_states.empty()) { state = m_states.top(); }
+        if (!states.empty()) { state = states.top(); }
 
-        this->update(state);
-        m_projection_source->render(state);
+        update(state);
+        projectionSource->render(state);
     }
 }
 
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
-{
+#ifdef _WIN32
+#include <Windows.h>
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     App app;
     app.run();
     return 0;
 }
+#else
+int main(int argc, char* argv[]) {
+    App app;
+    app.run();
+    return 0;
+}
+#endif

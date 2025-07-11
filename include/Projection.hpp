@@ -8,9 +8,6 @@
 class Projection :
     public sf::RectangleShape
 {
-private:
-    // m_functions
-    void init();
 
 public:
     // construction
